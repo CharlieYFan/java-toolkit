@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.whyyoufun</groupId>
+        <artifactId>java-toolkit</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>toolkit-easyexcel</artifactId>
+    <name>EasyExcel Toolkit</name>
+    <description>Enhanced EasyExcel utilities and tools</description>
+
+    <dependencies>
+
+        <!-- EasyExcel - 主要功能依赖 -->
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>easyexcel</artifactId>
+        </dependency>
+
+        <!-- Lombok - 继承父POM配置 -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+        </dependency>
+
+        <!-- 测试依赖 继承父POM配置 -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+        </dependency>
+
+        <!-- Spring Web - 提供MultipartFile支持 -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+        </dependency>
+
+        <!-- servlet-api - s提供HttpServletResponse支持 -->
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+        </dependency>
+
+
+    </dependencies>
+
+    <!-- 构建配置 -->
+    <build>
+        <!-- 子模块可以覆盖或添加特定的构建配置 -->
+        <plugins>
+            <!-- 继承父POM的编译器插件配置 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+            </plugin>
+
+            <!-- 可以添加模块特定的插件 -->
+        </plugins>
+    </build>
+
+</project>

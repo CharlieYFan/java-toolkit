@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.whyyoufun</groupId>
+    <artifactId>java-toolkit</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <name>Java Toolkit</name>
+    <description>A collection of useful Java utility toolkits</description>
+
+    <modules>
+        <module>toolkit-easyexcel</module>
+    </modules>
+
+    <properties>
+        <java.version>1.8</java.version>
+        <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.target>8</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <!-- 版本管理 -->
+        <lombok.version>1.18.36</lombok.version>
+        <junit.version>4.13.2</junit.version>
+        <!-- toolkit-easyexcel -->
+        <easyexcel.version>3.2.1</easyexcel.version>
+
+        <spring.version>5.3.33</spring.version>
+        <servlet-api.version>4.0.1</servlet-api.version>
+
+    </properties>
+
+    <!-- 依赖管理：统一版本，不实际引入 -->
+    <dependencyManagement>
+        <dependencies>
+
+            <!-- Lombok - 所有模块都可能用到 -->
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>${lombok.version}</version>
+                <scope>provided</scope>
+            </dependency>
+
+            <!-- 测试依赖 -->
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>${junit.version}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <!-- EasyExcel - 主要在easyexcel模块使用 -->
+            <dependency>
+                <groupId>com.alibaba</groupId>
+                <artifactId>easyexcel</artifactId>
+                <version>${easyexcel.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-web</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>javax.servlet</groupId>
+                <artifactId>javax.servlet-api</artifactId>
+                <version>${servlet-api.version}</version>
+            </dependency>
+
+        </dependencies>
+    </dependencyManagement>
+
+    <!-- 构建配置 -->
+    <build>
+        <!-- 插件管理：统一插件版本和配置 -->
+        <pluginManagement>
+            <plugins>
+                <!-- 编译器插件 - 必须配置以支持Lombok -->
+                <plugin>
+                    <groupId>org.apache.maven.plugin</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.11.0</version>
+                    <configuration>
+                        <source>${maven.compiler.source}</source>
+                        <target>${maven.compiler.target}</target>
+                        <encoding>${project.build.sourceEncoding}</encoding>
+                        <!-- Lombok注解处理器配置 -->
+                        <annotationProcessorPaths>
+                            <path>
+                                <groupId>org.projectlombok</groupId>
+                                <artifactId>lombok</artifactId>
+                                <version>${lombok.version}</version>
+                            </path>
+                        </annotationProcessorPaths>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+
+        <!-- 全局插件配置（所有子模块都会继承） -->
+        <plugins>
+            <!-- 编译器插件 - 所有模块都需要 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+            </plugin>
+        </plugins>
+
+    </build>
+
+</project>
