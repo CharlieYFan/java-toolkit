@@ -1,5 +1,6 @@
 package com.whyyoufun.toolkit.easyexcel;
 
+import com.whyyoufun.toolkit.easyexcel.converter.DataConverter;
 import com.whyyoufun.toolkit.easyexcel.converter.DefaultDataConverter;
 import com.whyyoufun.toolkit.easyexcel.exception.ExcelReadException;
 import com.whyyoufun.toolkit.easyexcel.exception.ExcelWriteException;
@@ -36,6 +37,7 @@ public class EasyExcelCommonUtil {
 
     /**
      * 读取第0页数据 (转指定数据类型)
+     * 需要使用easyExcel的ExcelProperty注解
      * @param file 读取文件
      * @param clazz 指定转换类型
      * @return 读取结果
@@ -51,12 +53,12 @@ public class EasyExcelCommonUtil {
                     .build();
 
             ReadResult<S> readResult = excelCommonReader.read(
-                            file,
-                            defaultReadParams,
-                            new DefaultDataConverter<>(),
-                            new DefaultBatchDataProcessor<>(),
-                            clazz,
-                            new ArrayList<>());
+                    file,
+                    defaultReadParams,
+                    new DefaultDataConverter<>(),
+                    new DefaultBatchDataProcessor<>(),
+                    clazz,
+                    new ArrayList<>());
 
             return readResult.getSheetData(0);
         } catch (ExcelReadException e){
@@ -66,6 +68,7 @@ public class EasyExcelCommonUtil {
 
     /**
      * 读取第0页数据 (转指定数据类型 指定表头行)
+     * 需要使用easyExcel的ExcelProperty注解
      * @param file 读取文件
      * @param clazz 指定转换类型
      * @return 读取结果
@@ -96,6 +99,7 @@ public class EasyExcelCommonUtil {
 
     /**
      * 读取第0页数据 (转指定数据类型 自定义校验规则)
+     * 需要使用easyExcel的ExcelProperty注解
      * @param file 读取文件
      * @param clazz 读取数据类型
      * @param customValidationRule 自定义校验规则
@@ -131,6 +135,7 @@ public class EasyExcelCommonUtil {
 
     /**
      * 分批读取第0页数据 (指定数据类型 指定批处理方法)
+     * 需要使用easyExcel的ExcelProperty注解
      * @param file 读取文件
      * @param clazz 指定转换类型
      * @param batchSize 批次大小
@@ -139,9 +144,9 @@ public class EasyExcelCommonUtil {
      * @param <S>
      */
     public static <S> SheetData<S> batchReadDefaultSheet(MultipartFile file,
-                                                    Class<S> clazz,
-                                                    int batchSize,
-                                                    BatchDataProcessor<S,S> batchDataProcessor) {
+                                                         Class<S> clazz,
+                                                         int batchSize,
+                                                         BatchDataProcessor<S,S> batchDataProcessor) {
         try {
             ReadParams defaultReadParams = ReadParams.builder()
                     .sheetNo(0)
@@ -166,6 +171,7 @@ public class EasyExcelCommonUtil {
 
     /**
      * 读取所有sheet数据 (转指定数据类型)
+     * 需要使用easyExcel的ExcelProperty注解
      * @param file 读取文件
      * @param clazz 指定转换类型
      * @return 读取结果
@@ -194,7 +200,7 @@ public class EasyExcelCommonUtil {
     }
 
     /**
-     * 读取第0页数据（不转换的原始数据）
+     * 读取第0页数据（不转换为具体对象的原始数据 -> 指定为Map<Integer, Objects>类型）
      * @param file 读取文件
      * @return Map<Integer, Objects>类型
      */
@@ -221,7 +227,37 @@ public class EasyExcelCommonUtil {
         }
     }
 
+    /**
+     * 读取第0页数据 (自定义转换器)
+     * 自定义转换逻辑，不需要使用easyExcel的ExcelProperty注解
+     * @param file 读取文件
+     * @param customConverter 自定义转换器
+     * @return 读取结果
+     * @param <S> easyExcel读取的原始数据类型
+     * @param <T> 自定义的转换后的数据类型
+     */
+    public static <S,T> SheetData<T> readDefaultSheet(MultipartFile file, DataConverter<S,T> customConverter) {
+        try {
+            ReadParams defaultReadParams = ReadParams.builder()
+                    .sheetNo(0)
+                    .headRowNumber(1)
+                    .batchSize(DEFAULT_BATCH_SIZE)
+                    .maxRowNum(Integer.MAX_VALUE)
+                    .build();
 
+            ReadResult<T> readResult = excelCommonReader.read(
+                    file,
+                    defaultReadParams,
+                    customConverter,
+                    new DefaultBatchDataProcessor<>(),
+                    null,
+                    new ArrayList<>());
+
+            return readResult.getSheetData(0);
+        } catch (ExcelReadException e){
+            throw new RuntimeException(e);
+        }
+    }
 
 
     /* ============================ FILE读取 ==============================*/
