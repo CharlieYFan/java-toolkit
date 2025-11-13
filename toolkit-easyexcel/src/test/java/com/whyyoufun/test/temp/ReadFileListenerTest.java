@@ -9,6 +9,8 @@ import com.whyyoufun.toolkit.easyexcel.reader.result.SheetData;
 import org.junit.Test;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 public class ReadFileListenerTest {
 
@@ -48,6 +50,20 @@ public class ReadFileListenerTest {
             System.out.println(user.getAppPackageName());
             System.out.println(user.getDisplayName());
             System.out.println(user.getAuditDelayFlow());
+        }
+    }
+
+    @Test
+    public void testUtils2() {
+        //无模型读取测试
+        SheetData<Map<Integer, Objects>> mapSheetData = EasyExcelCommonUtil.readDefaultSheetFormFile(fileName);
+
+        List<Map<Integer, Objects>> totalData = mapSheetData.getTotalData();
+        for (int i = 0; i < totalData.size(); i++) {
+            Map<Integer, Objects> integerObjectsMap = totalData.get(0);
+            for (Map.Entry<Integer, Objects> entry : integerObjectsMap.entrySet()) {
+                System.out.println(entry.getKey() + ":" + entry.getValue());
+            }
         }
     }
 }

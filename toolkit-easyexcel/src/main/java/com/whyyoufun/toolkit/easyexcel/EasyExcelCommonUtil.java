@@ -1,7 +1,5 @@
 package com.whyyoufun.toolkit.easyexcel;
 
-import com.alibaba.excel.util.ListUtils;
-import com.whyyoufun.toolkit.easyexcel.converter.DataConverter;
 import com.whyyoufun.toolkit.easyexcel.converter.DefaultDataConverter;
 import com.whyyoufun.toolkit.easyexcel.exception.ExcelReadException;
 import com.whyyoufun.toolkit.easyexcel.exception.ExcelWriteException;
@@ -22,6 +20,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import javax.servlet.http.HttpServletResponse;
 
 public class EasyExcelCommonUtil {
@@ -103,7 +102,7 @@ public class EasyExcelCommonUtil {
      * @return
      * @param <S>
      */
-    public static <S> SheetData<S> readDefaultSheet(MultipartFile file, Class<S> clazz, ValidationRule<S> customValidationRule ) {
+    public static <S> SheetData<S> readDefaultSheet(MultipartFile file, Class<S> clazz, ValidationRule<S> customValidationRule) {
         try {
             ReadParams defaultReadParams = ReadParams.builder()
                     .sheetNo(0)
@@ -194,7 +193,33 @@ public class EasyExcelCommonUtil {
         }
     }
 
+    /**
+     * 读取第0页数据（不转换的原始数据）
+     * @param file 读取文件
+     * @return Map<Integer, Objects>类型
+     */
+    public static SheetData<Map<Integer, Objects>> readDefaultSheetNoConverter(MultipartFile file) {
+        try {
+            ReadParams defaultReadParams = ReadParams.builder()
+                    .sheetNo(0)
+                    .headRowNumber(1)
+                    .batchSize(DEFAULT_BATCH_SIZE)
+                    .maxRowNum(Integer.MAX_VALUE)
+                    .build();
 
+            ReadResult<Map<Integer, Objects>> readResult = excelCommonReader.read(
+                    file,
+                    defaultReadParams,
+                    new DefaultDataConverter<>(),
+                    new DefaultBatchDataProcessor<>(),
+                    null,
+                    new ArrayList<>());
+
+            return readResult.getSheetData(0);
+        } catch (ExcelReadException e){
+            throw new RuntimeException(e);
+        }
+    }
 
 
 
@@ -220,6 +245,33 @@ public class EasyExcelCommonUtil {
                     new DefaultDataConverter<>(),
                     new DefaultBatchDataProcessor<>(),
                     clazz,
+                    new ArrayList<>());
+
+            return readResult.getSheetData(0);
+        } catch (ExcelReadException e){
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * 默认读取第0页数据(不转换)
+     * 转指定数据类型
+     */
+    public static SheetData<Map<Integer, Objects>> readDefaultSheetFormFile(String fileName) {
+        try {
+            ReadParams defaultReadParams = ReadParams.builder()
+                    .sheetNo(0)
+                    .headRowNumber(1)
+                    .batchSize(DEFAULT_BATCH_SIZE)
+                    .maxRowNum(Integer.MAX_VALUE)
+                    .build();
+
+            ReadResult<Map<Integer, Objects>> readResult = excelCommonReader.readFromFile(
+                    fileName,
+                    defaultReadParams,
+                    new DefaultDataConverter<>(),
+                    new DefaultBatchDataProcessor<>(),
+                    null,
                     new ArrayList<>());
 
             return readResult.getSheetData(0);

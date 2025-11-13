@@ -58,8 +58,8 @@ public class DefaultExcelValidator<S> implements ExcelValidator<S> {
             }
         }
 
-        //业务自定义校验
-        if (customRules != null){
+        //有则进行业务自定义校验
+        if (!customRules.isEmpty()){
             for (ValidationRule<S> rule : customRules){
                 String reason = rule.validateRow(rowData, rowNum);
                 if (reason != null) {
