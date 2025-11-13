@@ -1,6 +1,6 @@
 package com.whyyoufun.toolkit.easyexcel.reader.result;
 
-import com.whyyoufun.toolkit.easyexcel.validater.result.ValidationError;
+import com.whyyoufun.toolkit.easyexcel.validater.result.ErrorExcelData;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * sheet数据
+ * 单sheet数据
  */
 @Data
 @NoArgsConstructor
@@ -26,33 +26,33 @@ public class SheetData<T> {
     private String sheetName;
 
     /**
-     * 数据列表
+     * 数据列表(全部)
      */
-    private List<T> data = new ArrayList<>();
+    private List<T> totalData = new ArrayList<>();
 
     /**
-     * 错误数据
+     * 数据列表（校验不通过）
      */
-    private List<ValidationError> errors = new ArrayList<>();
+    private List<ErrorExcelData<T>> errorData = new ArrayList<>();
+
+    /**
+     * 数据列表（校验通过）
+     */
+    private List<T> successData = new ArrayList<>();
+
 
     public SheetData(int sheetNo, String sheetName) {
         this.sheetNo = sheetNo;
         this.sheetName = sheetName;
     }
 
-    public void addData(T item) {
-        this.data.add(item);
+    public void addSuccessData(T item) {
+        this.totalData.add(item);
+        this.successData.add(item);
     }
 
-    public void addAllData(List<T> items) {
-        this.data.addAll(items);
-    }
-
-    public void addError(ValidationError error) {
-        this.errors.add(error);
-    }
-
-    public void addAllErrors(List<ValidationError> errors) {
-        this.errors.addAll(errors);
+    public void addErrorData(ErrorExcelData<T> errorExcelData) {
+        this.totalData.add(errorExcelData.getErrorData());
+        errorData.add(errorExcelData);
     }
 }

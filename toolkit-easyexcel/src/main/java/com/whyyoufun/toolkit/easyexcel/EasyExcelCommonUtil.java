@@ -1,13 +1,16 @@
 package com.whyyoufun.toolkit.easyexcel;
 
 import com.whyyoufun.toolkit.easyexcel.converter.DataConverter;
+import com.whyyoufun.toolkit.easyexcel.converter.DefaultDataConverter;
 import com.whyyoufun.toolkit.easyexcel.exception.ExcelReadException;
 import com.whyyoufun.toolkit.easyexcel.exception.ExcelWriteException;
 import com.whyyoufun.toolkit.easyexcel.reader.EasyExcelCommonReader;
 import com.whyyoufun.toolkit.easyexcel.reader.ExcelCommonReader;
 import com.whyyoufun.toolkit.easyexcel.reader.param.ReadParams;
 import com.whyyoufun.toolkit.easyexcel.reader.processor.BatchDataProcessor;
+import com.whyyoufun.toolkit.easyexcel.reader.processor.DefaultBatchDataProcessor;
 import com.whyyoufun.toolkit.easyexcel.reader.result.ReadResult;
+import com.whyyoufun.toolkit.easyexcel.reader.result.SheetData;
 import com.whyyoufun.toolkit.easyexcel.writer.EasyExcelCommonWriter;
 import com.whyyoufun.toolkit.easyexcel.writer.ExcelCommonWriter;
 import com.whyyoufun.toolkit.easyexcel.writer.param.WriteParams;
@@ -24,45 +27,84 @@ public class EasyExcelCommonUtil {
 
     private static final ExcelCommonWriter excelCommonWriter = new EasyExcelCommonWriter();
 
+    //默认批次大小
+    public static final int DEFAULT_BATCH_SIZE = 1000;
+
     private EasyExcelCommonUtil() {}
 
     /**
-     * 读取原始数据
-     * @param file
-     * @param readParams
-     * @return
-     * @throws ExcelReadException
+     * 读取第0页数据 (转指定数据类型)
+     * @param file 读取文件
+     * @param clazz 指定转换类型
+     * @return 读取结果
+     * @param <S>
      */
-    public static ReadResult<Map<Integer, Object>> read(MultipartFile file, ReadParams readParams) throws ExcelReadException {
-        try{
-            ReadResult<Map<Integer, Object>> result = excelCommonReader.read(file, readParams);
-            return result;
+    public static <S> SheetData<S> readDefaultSheet(MultipartFile file, Class<S> clazz) {
+        try {
+            ReadParams defaultReadParams = ReadParams.builder()
+                    .sheetNo(0)
+                    .headRowNumber(1)
+                    .batchSize(DEFAULT_BATCH_SIZE)
+                    .maxRowNum(Integer.MAX_VALUE)
+                    .build();
+
+
+
+            ReadResult<S> readResult = excelCommonReader.read(
+                            file,
+                            defaultReadParams,
+                            new DefaultDataConverter<>(),
+                            new DefaultBatchDataProcessor<>(),
+                            clazz);
+
+            return readResult.getSheetData(0);
         } catch (ExcelReadException e){
-            throw e;
+            throw new RuntimeException(e);
         }
     }
 
     /**
-     * 读取并自定义转换
-     * @param file
-     * @param converter
-     * @param readParams
-     * @param batchDataProcessor
-     * @return
-     * @param <T>
-     * @throws ExcelReadException
+     * 默认读取
      */
-    public static <T> ReadResult<T> readWithConverter(MultipartFile file,
-                                                      DataConverter<Map<Integer, Object>, T> converter,
-                                                      ReadParams readParams,
-                                                      BatchDataProcessor<T> batchDataProcessor) throws ExcelReadException {
+
+
+
+
+
+
+
+
+    /* ============================ FILE读取 ==============================*/
+
+    /**
+     * 默认读取第0页数据
+     * 转指定数据类型
+     */
+    public static <S> SheetData<S> readDefaultSheetFormFile(String fileName, Class<S> clazz) {
         try {
-            ReadResult<T> result = excelCommonReader.readWithConverter(file, readParams, converter, batchDataProcessor);
-            return result;
-        } catch (ExcelReadException e) {
-            throw e;
+            ReadParams defaultReadParams = ReadParams.builder()
+                    .sheetNo(0)
+                    .headRowNumber(1)
+                    .batchSize(DEFAULT_BATCH_SIZE)
+                    .maxRowNum(Integer.MAX_VALUE)
+                    .build();
+
+            ReadResult<S> readResult = excelCommonReader.readFromFile(
+                    fileName,
+                    defaultReadParams,
+                    new DefaultDataConverter<>(),
+                    new DefaultBatchDataProcessor<>(),
+                    clazz
+                    );
+
+            return readResult.getSheetData(0);
+        } catch (ExcelReadException e){
+            throw new RuntimeException(e);
         }
     }
+
+
+    /* ============================ WRITE ==============================*/
 
     /**
      * 写入到response(多sheet)

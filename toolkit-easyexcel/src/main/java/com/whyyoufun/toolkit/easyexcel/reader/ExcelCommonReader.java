@@ -7,28 +7,36 @@ import com.whyyoufun.toolkit.easyexcel.reader.processor.BatchDataProcessor;
 import com.whyyoufun.toolkit.easyexcel.reader.result.ReadResult;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Map;
 
 public interface ExcelCommonReader {
 
     /**
-     * 读取数据
-     * @param file
-     * @param readParams
-     * @return
-     * @throws ExcelReadException
-     */
-    ReadResult<Map<Integer,Object>> read(MultipartFile file, ReadParams readParams) throws ExcelReadException;
-
-    /**
      * 读取并自定义转换
-     * @param file
-     * @param readParams
-     * @param converter
+     * @param file 读取文件
+     * @param readParams 读取参数
+     * @param converter 自定义数据转换器
+     * @param batchDataProcessor 自定义批处理数据处理器
+     * @param clazz 指定读取类型
      * @return
      * @param <T>
      * @throws ExcelReadException
      */
-    <T> ReadResult<T> readWithConverter(MultipartFile file, ReadParams readParams, DataConverter<Map<Integer, Object>
-                , T> converter, BatchDataProcessor<T> batchDataProcessor) throws ExcelReadException;
+    <S,T> ReadResult<T> read(MultipartFile file, ReadParams readParams, DataConverter<S, T> converter,
+                             BatchDataProcessor<S,T> batchDataProcessor, Class<S> clazz) throws ExcelReadException;
+
+    /**
+     * 读取并自定义转换
+     * @param fileName 本地文件名
+     * @param readParams 读取参数
+     * @param converter 自定义数据转换器
+     * @param batchDataProcessor 自定义批处理数据处理器
+     * @param clazz 指定读取类型
+     * @return
+     * @param <T>
+     * @throws ExcelReadException
+     */
+    <S,T> ReadResult<T> readFromFile(String fileName, ReadParams readParams, DataConverter<S, T> converter,
+                              BatchDataProcessor<S,T> batchDataProcessor, Class<S> clazz) throws ExcelReadException;
+
+
 }

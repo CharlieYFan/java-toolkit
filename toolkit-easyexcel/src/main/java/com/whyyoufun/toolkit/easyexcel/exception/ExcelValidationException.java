@@ -1,24 +1,15 @@
 package com.whyyoufun.toolkit.easyexcel.exception;
 
-import com.whyyoufun.toolkit.easyexcel.validater.result.ValidationResult;
-
 /**
  * 校验异常
  */
 public class ExcelValidationException extends ExcelException{
-    private final ValidationResult validationResult;
 
-    public ExcelValidationException(String message, ValidationResult validationResult) {
+    public ExcelValidationException(String message) {
         super(message);
-        this.validationResult = validationResult;
     }
 
-    public ExcelValidationException(String message, ValidationResult validationResult, Throwable cause) {
+    public ExcelValidationException(String message,  Throwable cause) {
         super(message, cause);
-        this.validationResult = validationResult;
-    }
-
-    public ValidationResult getValidationResult() {
-        return validationResult;
     }
 }

@@ -2,23 +2,22 @@ package com.whyyoufun.toolkit.easyexcel.validater.rule;
 
 import com.whyyoufun.toolkit.easyexcel.exception.ExcelValidationException;
 import com.whyyoufun.toolkit.easyexcel.reader.param.ReadParams;
-import com.whyyoufun.toolkit.easyexcel.validater.result.ValidationResult;
 
 import java.util.Map;
 
 /**
  * 校验规则
  */
-public interface ValidationRule {
+public interface ValidationRule<T> {
 
     void init(ReadParams readParams);
 
     /**
      * 行校验
-     * @param rowData
-     * @param rowNum
-     * @return
+     * @param rowData 当前行数据
+     * @param currentRowNum 当前行号
+     * @return 错误原因
      */
-    ValidationResult validateRow(Map<Integer, Object> rowData, int rowNum) throws ExcelValidationException;
+    String validateRow(T rowData, int currentRowNum) throws ExcelValidationException;
 
 }

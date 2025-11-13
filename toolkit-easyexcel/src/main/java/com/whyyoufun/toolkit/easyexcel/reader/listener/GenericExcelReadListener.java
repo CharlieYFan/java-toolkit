@@ -3,20 +3,19 @@ package com.whyyoufun.toolkit.easyexcel.reader.listener;
 import com.alibaba.excel.context.AnalysisContext;
 import com.alibaba.excel.event.AnalysisEventListener;
 
+import com.alibaba.excel.metadata.data.ReadCellData;
+import com.alibaba.excel.util.ListUtils;
 import com.whyyoufun.toolkit.easyexcel.converter.DataConverter;
-import com.whyyoufun.toolkit.easyexcel.converter.DefaultDataConverter;
 import com.whyyoufun.toolkit.easyexcel.exception.ExcelValidationException;
 import com.whyyoufun.toolkit.easyexcel.reader.param.ReadParams;
 import com.whyyoufun.toolkit.easyexcel.reader.processor.BatchDataProcessor;
-import com.whyyoufun.toolkit.easyexcel.reader.processor.DefaultBatchDataProcessor;
 import com.whyyoufun.toolkit.easyexcel.reader.result.SheetData;
 import com.whyyoufun.toolkit.easyexcel.validater.ExcelValidator;
-import com.whyyoufun.toolkit.easyexcel.validater.result.ValidationResult;
 import com.whyyoufun.toolkit.easyexcel.reader.result.ReadResult;
 
+import com.whyyoufun.toolkit.easyexcel.validater.result.ErrorExcelData;
 import lombok.Getter;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -25,7 +24,7 @@ import java.util.Map;
  * @param <T>
  */
 @Getter
-public class GenericExcelReadListener<T> extends AnalysisEventListener<Map<Integer, Object>> {
+public class GenericExcelReadListener<S,T> extends AnalysisEventListener<S> {
 
     /**
      * 读取参数
@@ -35,22 +34,17 @@ public class GenericExcelReadListener<T> extends AnalysisEventListener<Map<Integ
     /**
      * 校验器
      */
-    private final ExcelValidator excelValidator;
+    private final ExcelValidator<S> excelValidator;
 
     /**
      * 自定义转换器
      */
-    private final DataConverter<Map<Integer,Object>, T> converter;
+    private final DataConverter<S,T> converter;
 
     /**
      * 自定义批处理器
      */
-    private final BatchDataProcessor<T> batchDataProcessor;
-
-    /**
-     * 缓存当前批次
-     */
-    private List<Map<Integer, Object>> cacheBatchData = new ArrayList<>();
+    private final BatchDataProcessor<S,T> batchDataProcessor;
 
     /**
      * 批次大小
@@ -58,77 +52,72 @@ public class GenericExcelReadListener<T> extends AnalysisEventListener<Map<Integ
     private int batchSize = 1000;
 
     /**
-     * 读取结果
+     * 缓存当前批次
+     */
+    private List<S> cacheBatchData;
+
+    /**
+     * 多sheet读取结果
      */
     private ReadResult<T> readResult = new ReadResult<>();
 
     /**
-     * 当前sheet数据
+     * 当前sheet读取结果
      */
     private SheetData<T> currentSheetData;
 
     /**
-     * 当前行号
+     * 当前行号(不包括空行)
      */
     private int currentRowNum = 0;
 
     /**
-     * 自定义转换器
-     * @param readParams
-     * @param excelValidator
-     * @param converter
-     * @param batchDataProcessor
+     *
+     * @param readParams 读取参数
+     * @param excelValidator 校验器
+     * @param converter 转换器
+     * @param batchDataProcessor 批次数据处理器
      */
-    public GenericExcelReadListener(ReadParams readParams, ExcelValidator excelValidator,
-                                    DataConverter<Map<Integer, Object>, T> converter,
-                                    BatchDataProcessor<T> batchDataProcessor) {
+    public GenericExcelReadListener(ReadParams readParams,
+                                    ExcelValidator<S> excelValidator,
+                                    DataConverter<S, T> converter,
+                                    BatchDataProcessor<S,T> batchDataProcessor) {
         this.readParams = readParams;
         this.excelValidator = excelValidator;
         this.converter = converter;
         this.batchSize = readParams.getBatchSize();
         this.batchDataProcessor = batchDataProcessor;
+        this.cacheBatchData = ListUtils.newArrayListWithExpectedSize(batchSize);
     }
 
     /**
-     * 默认转换器
-     * @param readParams
-     * @param excelValidator
-     */
-    @SuppressWarnings("unchecked")
-    public GenericExcelReadListener(ReadParams readParams, ExcelValidator excelValidator) {
-        this.readParams = readParams;
-        this.excelValidator = excelValidator;
-        this.converter = (DataConverter<Map<Integer, Object>, T>) new DefaultDataConverter();
-        this.batchSize = readParams.getBatchSize();
-        this.batchDataProcessor = new DefaultBatchDataProcessor<T>();
-    }
-
-    /**
-     * 每行数据处理
+     * 当前sheet每行数据处理
      * @param data
      * @param analysisContext
      */
     @Override
-    public void invoke(Map<Integer, Object> data, AnalysisContext analysisContext) {
+    public void invoke(S data, AnalysisContext analysisContext) {
+        //实际行数
         currentRowNum++;
+
         //处理当前行数据
         try {
-            processRowData(data, analysisContext);
+            processRowData(data, analysisContext, currentRowNum);
         } catch (ExcelValidationException e) {
             //特定校验不通过停止处理
-            return;
+            throw e;
         }
 
         //处理批次数据
         cacheBatchData.add(data);
         if (cacheBatchData.size() >= batchSize){
             processBatchData(cacheBatchData, analysisContext, currentSheetData);
-            cacheBatchData.clear();
+            cacheBatchData = ListUtils.newArrayListWithExpectedSize(batchSize);
         }
     }
 
     /**
-     * 读取完成回调
+     * 当前sheet读取完成回调
      * @param analysisContext
      */
     @Override
@@ -136,17 +125,17 @@ public class GenericExcelReadListener<T> extends AnalysisEventListener<Map<Integ
         //处理最后一批数据
         if (!cacheBatchData.isEmpty()){
             processBatchData(cacheBatchData, analysisContext, currentSheetData);
-            cacheBatchData.clear();
+            cacheBatchData = ListUtils.newArrayListWithExpectedSize(batchSize);
         }
     }
 
     /**
-     * 表头行回调
+     * 当前sheet表头行回调
      * @param headMap
      * @param context
      */
     @Override
-    public void invokeHeadMap(Map<Integer, String> headMap, AnalysisContext context) {
+    public void invokeHead(Map<Integer, ReadCellData<?>> headMap, AnalysisContext context) {
         //读取到表头行，初始化当前sheet
         int sheetNo = context.readSheetHolder().getSheetNo();
         String sheetName = context.readSheetHolder().getSheetName();
@@ -156,32 +145,26 @@ public class GenericExcelReadListener<T> extends AnalysisEventListener<Map<Integ
 
     /**
      * 处理行数据
-     * @param rowData
+     * @param rowData 当前行数据
      * @param context
+     * @param currentRowNum 当前实际行数(不包括空行)
      */
-    private void processRowData(Map<Integer, Object> rowData, AnalysisContext context) throws ExcelValidationException {
-        readResult.incrementTotalRowCount();
-
+    private void processRowData(S rowData, AnalysisContext context, int currentRowNum) throws ExcelValidationException {
         //校验当前行数据
-        ValidationResult validationResult = null;
-        validationResult = excelValidator.validateRow(rowData, currentRowNum);
+        String reason = excelValidator.validateRow(rowData, currentRowNum);
+        //执行自定义数据转换逻辑
+        T convertedData = converter.convert(rowData);
 
-        if (validationResult.hasErrors()){
-            //校验不通过
-            readResult.incrementFailRowCount();
-
-            //读取结果错误数据记录
-            readResult.addValidationErrors(validationResult);
-            //当前页的错误数据记录
-            currentSheetData.addAllErrors(validationResult.getErrors());
+        if (reason != null){
+            //有错误原因，说明校验没通过
+            //物理行号(包括空行)
+            Integer rowIndex = context.readRowHolder().getRowIndex();
+            ErrorExcelData<T> errorExcelData = new ErrorExcelData<>(rowIndex, reason, convertedData);
+            //记录错误数据
+            currentSheetData.addErrorData(errorExcelData);
         } else {
-            //校验通过
-            readResult.incrementSuccessRowCount();
-
-            //数据对象转换
-            T converted =  converter.convert(rowData);
-            //记录转换后的数据
-            currentSheetData.addData(converted);
+            //无错误原因，说明校验通过，记录成功数据
+            currentSheetData.addSuccessData(convertedData);
         }
     }
 
@@ -190,8 +173,8 @@ public class GenericExcelReadListener<T> extends AnalysisEventListener<Map<Integ
      * @param cacheBatchData
      * @param analysisContext
      */
-    private void processBatchData(List<Map<Integer, Object>> cacheBatchData, AnalysisContext analysisContext, SheetData<T> currentSheetData) {
-        batchDataProcessor.processBatchData(cacheBatchData, currentSheetData);
+    private void processBatchData(List<S> cacheBatchData, AnalysisContext analysisContext, SheetData<T> currentSheetData) {
+        batchDataProcessor.processBatchData(cacheBatchData, currentSheetData, converter);
     }
 
 }

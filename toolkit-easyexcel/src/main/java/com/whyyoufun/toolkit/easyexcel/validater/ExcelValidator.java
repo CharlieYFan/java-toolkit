@@ -3,19 +3,17 @@ package com.whyyoufun.toolkit.easyexcel.validater;
 
 import com.whyyoufun.toolkit.easyexcel.exception.ExcelValidationException;
 import com.whyyoufun.toolkit.easyexcel.reader.param.ReadParams;
-import com.whyyoufun.toolkit.easyexcel.validater.result.ValidationResult;
 
-import java.util.Map;
 
-public interface ExcelValidator {
+public interface ExcelValidator<S> {
 
     void init(ReadParams readParams);
 
     /**
      * 行校验
-     * @param rowData 行数据
-     * @param rowNum 行号
-     * @return
+     * @param rowData 当前行数据
+     * @param currentRowNum 当前行号
+     * @return 错误原因
      */
-    ValidationResult validateRow(Map<Integer, Object> rowData, int rowNum) throws ExcelValidationException;
+    String validateRow(S rowData, int currentRowNum) throws ExcelValidationException;
 }

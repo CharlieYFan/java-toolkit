@@ -1,15 +1,13 @@
 package com.whyyoufun.toolkit.easyexcel.converter;
 
-import java.util.Map;
-
 /**
  * 默认数据转换器
  */
-public class DefaultDataConverter implements DataConverter<Map<Integer, Object>, Map<Integer, Object>>{
+public class DefaultDataConverter<T> implements DataConverter<T,T>{
 
     @Override
-    public Map<Integer, Object> convert(Map<Integer, Object> source) {
-        //返回原始数据
+    public T convert(T source) {
+        //默认不转换，返回原始数据
         return source;
     }
 }

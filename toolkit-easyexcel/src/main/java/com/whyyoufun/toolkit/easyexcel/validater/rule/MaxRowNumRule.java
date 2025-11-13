@@ -3,15 +3,11 @@ package com.whyyoufun.toolkit.easyexcel.validater.rule;
 
 import com.whyyoufun.toolkit.easyexcel.exception.ExcelValidationException;
 import com.whyyoufun.toolkit.easyexcel.reader.param.ReadParams;
-import com.whyyoufun.toolkit.easyexcel.validater.result.ValidationError;
-import com.whyyoufun.toolkit.easyexcel.validater.result.ValidationResult;
-
-import java.util.Map;
 
 /**
  * 最大行数校验规则
  */
-public class MaxRowNumRule implements ValidationRule {
+public class MaxRowNumRule<T> implements ValidationRule<T> {
     private ReadParams readParams;
 
     @Override
@@ -20,14 +16,10 @@ public class MaxRowNumRule implements ValidationRule {
     }
 
     @Override
-    public ValidationResult validateRow(Map<Integer, Object> rowData, int rowNum) {
-        ValidationResult validationResult = new ValidationResult();
-        if (rowNum > readParams.getMaxRowNum()) {
-            ValidationError error = new ValidationError(rowNum,"max row num");
-            validationResult.addError(error);
-            //校验不通过抛出异常停止后续读取
-            throw new ExcelValidationException("max row num", validationResult);
+    public String validateRow(T rowData, int currentRowNum) throws ExcelValidationException {
+        if (currentRowNum > readParams.getMaxRowNum()){
+            throw new ExcelValidationException("max row num");
         }
-        return validationResult;
+        return null;
     }
 }
