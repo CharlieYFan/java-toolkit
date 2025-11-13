@@ -137,6 +137,7 @@ public class GenericExcelReadListener<S,T> extends AnalysisEventListener<S> {
     @Override
     public void invokeHead(Map<Integer, ReadCellData<?>> headMap, AnalysisContext context) {
         //读取到表头行，初始化当前sheet
+        currentRowNum = 0;
         int sheetNo = context.readSheetHolder().getSheetNo();
         String sheetName = context.readSheetHolder().getSheetName();
         currentSheetData = new SheetData<>(sheetNo, sheetName);

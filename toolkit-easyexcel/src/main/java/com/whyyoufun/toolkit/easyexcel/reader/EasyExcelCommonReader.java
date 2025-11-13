@@ -11,19 +11,21 @@ import com.whyyoufun.toolkit.easyexcel.reader.processor.BatchDataProcessor;
 import com.whyyoufun.toolkit.easyexcel.reader.result.ReadResult;
 import com.whyyoufun.toolkit.easyexcel.validater.DefaultExcelValidator;
 import com.whyyoufun.toolkit.easyexcel.validater.ExcelValidator;
+import com.whyyoufun.toolkit.easyexcel.validater.rule.ValidationRule;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 
 public class EasyExcelCommonReader implements ExcelCommonReader {
 
     @Override
     public <S, T> ReadResult<T> read(MultipartFile file, ReadParams readParams, DataConverter<S, T> converter,
-                                     BatchDataProcessor<S, T> batchDataProcessor, Class<S> clazz) throws ExcelReadException {
+                                     BatchDataProcessor<S, T> batchDataProcessor, Class<S> clazz, List<ValidationRule<S>> customValidationRules) throws ExcelReadException {
         try {
             //校验器
             ExcelValidator<S> excelValidator = new DefaultExcelValidator<>();
-            excelValidator.init(readParams);
+            excelValidator.init(readParams, customValidationRules);
             //监听器
             GenericExcelReadListener<S, T> listener =
                     new GenericExcelReadListener<>(readParams, excelValidator, converter, batchDataProcessor);
@@ -38,10 +40,10 @@ public class EasyExcelCommonReader implements ExcelCommonReader {
 
     @Override
     public <S, T> ReadResult<T> readFromFile(String fileName, ReadParams readParams, DataConverter<S, T> converter,
-                                             BatchDataProcessor<S, T> batchDataProcessor, Class<S> clazz) throws ExcelReadException {
+                                             BatchDataProcessor<S, T> batchDataProcessor, Class<S> clazz, List<ValidationRule<S>> customValidationRules) throws ExcelReadException {
         //校验器
         ExcelValidator<S> excelValidator = new DefaultExcelValidator<>();
-        excelValidator.init(readParams);
+        excelValidator.init(readParams, customValidationRules);
         //监听器
         GenericExcelReadListener<S, T> listener =
                 new GenericExcelReadListener<>(readParams, excelValidator, converter, batchDataProcessor);

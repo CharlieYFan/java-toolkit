@@ -3,11 +3,18 @@ package com.whyyoufun.toolkit.easyexcel.validater;
 
 import com.whyyoufun.toolkit.easyexcel.exception.ExcelValidationException;
 import com.whyyoufun.toolkit.easyexcel.reader.param.ReadParams;
+import com.whyyoufun.toolkit.easyexcel.validater.rule.ValidationRule;
 
+import java.util.List;
 
 public interface ExcelValidator<S> {
 
-    void init(ReadParams readParams);
+    /**
+     *
+     * @param readParams 读取参数
+     * @param customValidationRules 自定义校验规则
+     */
+    void init(ReadParams readParams, List<ValidationRule<S>> customValidationRules);
 
     /**
      * 行校验
